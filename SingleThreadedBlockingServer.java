@@ -4,28 +4,27 @@ import java.io.*;
 public class SingleThreadedBlockingServer {
     public static void main(String[] args) throws IOException {
         int port = 8081;
-        Socket s = null;
-        InputStream in = null;
-        OutputStream out = null;
-        try (ServerSocket ss = new ServerSocket(port)) {
+        ServerSocket ss = new ServerSocket(port);
 
-            while (true) {
-                s = ss.accept();
-                in = s.getInputStream();
-                out = s.getOutputStream();
-                int data;
-                while ((data = in.read()) != -1) {
-                    out.write(transmogrify(data));
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Problem with create socket");
-        } finally {
-            out.close();
-            in.close();
-            s.close();
+        while (true) {
+            Socket s = ss.accept();
+            handle(s);
+
         }
 
+    }
+
+    public static void handle(Socket s) throws IOException {
+        System.out.println("Connected to" + s);
+        try (s; InputStream in = s.getInputStream(); OutputStream out = s.getOutputStream()) {
+            int data;
+            while ((data = in.read()) != -1) {
+                out.write(transmogrify(data));
+            }
+        } finally {
+            System.out.println("Disconnected from" + s);
+
+        }
     }
 
     public static int transmogrify(int data) {
